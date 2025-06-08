@@ -1,0 +1,140 @@
+#CÓDIGO PRINCIPAL
+#Clase que representa una tabla hash con encadenamiento para resolver colisiones
+class HashTable:
+    def __init__(self, size):
+        #Guardamos el tamaño de la tabla
+        self.size = size
+        #Creamos una lista con 'size' casillas, cada una contiene una lista vacía
+        self.table = [[] for _ in range(size)]
+        #Contador de cuántos elementos se han guardado
+        self.total_elements = 0
+        #Contador de colisiones ocurridas (cuando dos claves distintas caen en la misma casilla)
+        self.collisions = 0
+
+    #Función hash: convierte la clave en un número entre 0 y tamaño-1
+    def hash_fun(self, clave):
+        #Suma el valor ASCII de cada letra de la clave
+        return sum(ord(c) for c in clave) % self.size
+
+    #Inserta un nuevo elemento en la tabla
+    def insert(self, elemento):
+        clave = elemento.get_key()
+        indice = self.hash_fun(clave)  #Calculamos el índice donde debe ir
+        bucket = self.table[indice]    #Obtenemos la lista (bucket) de esa casilla
+
+        #Verificamos si ya existe un objeto con esa clave
+        for item in bucket:
+            if item.get_key() == clave:
+                return False  #Si existe, no lo insertamos
+
+        #Si hay más de un elemento en esa casilla, es una colisión
+        if len(bucket) > 0:
+            self.collisions += 1
+
+        #Agregamos el elemento a la lista (bucket) de ese índice
+        bucket.append(elemento)
+        self.total_elements += 1  # Aumentamos el contador de elementos
+        return True
+
+    #Busca un elemento por su clave
+    def search(self, elemento):
+        clave = elemento.get_key()
+        indice = self.hash_fun(clave)
+        bucket = self.table[indice]
+
+        #Recorremos el bucket para ver si está el elemento
+        for item in bucket:
+            if item.get_key() == clave:
+                return True  # Lo encontramos
+        return False  # No está
+
+    #Elimina un elemento de la tabla usando su clave
+    def delete(self, clave):
+        indice = self.hash_fun(clave)
+        bucket = self.table[indice]
+
+        #Recorremos el bucket buscando la clave
+        for i, item in enumerate(bucket):
+            if item.get_key() == clave:
+                del bucket[i]  # Lo eliminamos de la lista
+                self.total_elements -= 1  # Restamos al total
+                return True
+        return False  # No se encontró para eliminar
+
+    #Para saber cuántos elementos hay
+    def __len__(self):
+        return self.total_elements
+
+    #Devuelve cuántas colisiones se han producido
+    def collision_count(self):
+        return self.collisions
+
+    #Mostrar un resumen de cuántas casillas están vacías y cuántas tienen más de un elemento
+    def distribution(self):
+        vacías = sum(1 for lista in self.table if len(lista) == 0)
+        saturadas = sum(1 for lista in self.table if len(lista) > 1)
+        return f"Vacías: {vacías}, Con colisiones: {saturadas}"
+
+    #Representación visual de la tabla hash
+    def __str__(self):
+        resultado = ""
+        # Recorremos cada índice de la tabla
+        for i, lista in enumerate(self.table):
+            # Convertimos cada objeto en string para mostrarlo
+            elementos = ", ".join(str(e) for e in lista)
+            resultado += f"Índice {i}: [{elementos}]\n"
+        return resultado
+
+"""Clase auxiliar Persona para cumplir con los requisitos usados en la tabla"""
+
+#Clase de ejemplo para usar con la tabla hash
+class Persona:
+    def __init__(self, nombre, edad):
+        self.nombre = nombre
+        self.edad = edad
+
+    #Devuelve la clave usada en la tabla hash (el nombre)
+    def get_key(self):
+        return self.nombre
+
+    #Representación en forma de texto
+    def __str__(self):
+        return f"{self.nombre} ({self.edad} años)"
+
+        
+"""Programa principal"""
+
+if __name__ == "__main__":
+    # Creamos una tabla hash con 5 casillas
+    tabla = HashTable(5)
+
+    # Lista de personas para insertar
+    personas = [
+        Persona("Ana", 25),
+        Persona("Luis", 30),
+        Persona("Sofía", 22),
+        Persona("Carlos", 40),
+        Persona("Laura", 28),
+        Persona("Elena", 35)  #Esta probablemente cause colisión
+    ]
+
+    print("Insertando personas:")
+    for p in personas:
+        exito = tabla.insert(p)  #Intentamos insertar
+        print(f"Insertar {p}: {'OK' if exito else 'Duplicado'}")
+
+    print("Buscando a Laura:")
+    encontrada = tabla.search(Persona("Laura", 28))  #Se busca a Laura
+    print("Encontrada" if encontrada else "No encontrada")
+
+    print("Borrando a Luis...")
+    borrado = tabla.delete("Luis")  #Se intenta borrar a Luis
+    print("Borrado con éxito" if borrado else "No se encontró")
+
+    print("Estado actual de la tabla:")
+    print(tabla)  #Mostramos el contenido actual de la tabla
+
+    # Mostramos estadísticas adicionales
+    print("Total de elementos:", len(tabla))
+    print("Colisiones registradas:", tabla.collision_count())
+    print("Distribución:", tabla.distribution())
