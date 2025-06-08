@@ -17,7 +17,7 @@ Me propuse partir de una versión básica de una tabla hash y darle algunas mejo
 ### Búsqueda de elementos
 - Implementé `search()` para comprobar si un elemento (por su clave) está dentro de la tabla.
 
-### 🗑Eliminación de elementos
+### Eliminación de elementos
 - Añadí un método `delete()` que permite eliminar un elemento dado su clave, algo que no estaba incluido en el ejercicio original.
 
 ### Estadísticas útiles
